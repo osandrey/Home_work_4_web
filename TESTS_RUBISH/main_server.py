@@ -7,13 +7,13 @@ class MyHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         url = urlparse(self.path)
         if url.path == '/':
-            self.send_html_file('index.html')
+            self.send_html_file('../web/templates/index.html')
         elif url.path == '/message':
-            self.send_html_file('message.html')
+            self.send_html_file('../web/templates/message.html')
         elif url.path == '/thanks':
-            self.send_html_file('thanks.html', 302)
+            self.send_html_file('../web/templates/thanks.html', 302)
         else:
-            self.send_html_file('error.html', 404)
+            self.send_html_file('../web/templates/error.html', 404)
 
 
     def send_html_file(self, filename, status=200):

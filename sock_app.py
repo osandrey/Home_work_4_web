@@ -1,8 +1,10 @@
+import mimetypes
+
 from flask import Flask, render_template, request
 import socket
 import pickle
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='', static_folder='web/static', template_folder='web/templates')
 UDP_IP = 'localhost'
 UDP_PORT = 5000
 
@@ -46,7 +48,16 @@ def run_client(ip, port, data):
             break
     sock.close()
 
-
+# def send_static(self):
+#     self.send_response(200)
+#     mt = mimetypes.guess_type(self.path)
+#     if mt:
+#         self.send_header("Content-type", mt[0])
+#     else:
+#         self.send_header("Content-type", 'text/plain')
+#     self.end_headers()
+#     with open(f'.{self.path}', 'rb') as file:
+#         self.wfile.write(file.read())
 
 @app.route('/error')
 def error():
@@ -54,4 +65,4 @@ def error():
 
 
 if __name__ =='__main__':
-    app.run()
+    app.run(debug=False)

@@ -1,4 +1,4 @@
-import mimetypes
+# import mimetypes
 import pickle
 import socket
 import json
@@ -36,16 +36,9 @@ def run_server(ip, port):
         print('SERVER DESTROYED')
     finally:
         sock.close()
-def send_static(self):
-    self.send_response(200)
-    mt = mimetypes.guess_type(self.path)
-    if mt:
-        self.send_header("Content-type", mt[0])
-    else:
-        self.send_header("Content-type", 'text/plain')
-    self.end_headers()
-    with open(f'.{self.path}', 'rb') as file:
-        self.wfile.write(file.read())
+
+
+
 
 
 if __name__ == '__main__':

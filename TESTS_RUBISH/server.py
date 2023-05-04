@@ -1,7 +1,14 @@
 import mimetypes
+import pickle
+
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.parse
 from pathlib import Path
+import socket
+
+UDP_IP = '127.0.0.1'
+UDP_PORT = 5000
+
 
 
 class HttpHandler(BaseHTTPRequestHandler):
@@ -9,31 +16,29 @@ class HttpHandler(BaseHTTPRequestHandler):
         pr_url = urllib.parse.urlparse(self.path)
         print(self.path)
         if pr_url.path == '/':
-            self.send_html_file('index.html')
+            self.send_html_file('../web/templates/index.html')
         elif pr_url.path == '/message':
-            self.send_html_file('message.html')
-        elif pr_url.path == '/thanks':
-            self.send_html_file('thanks.html', 302)
+            self.send_html_file('../web/templates/message.html')
         else:
             if Path().joinpath(pr_url.path[1:]).exists():
                 self.send_static()
             else:
-                self.send_html_file('error.html', 404)
+                self.send_html_file('../web/templates/error.html', 404)
+
+
 
     def do_POST(self):
         data = self.rfile.read()
-        print(data)
+
         data_parse = urllib.parse.unquote_plus(data.decode())
         print(data_parse)
-        data_parse = self.parse_from_data(data_parse)
-        print(data_parse)
+        data_dict = {key: value for key, value in [el.split('=') for el in data_parse.split('&')]}
+        run_client(UDP_IP, UDP_PORT, data_dict)
+        print(f'DATA PARSED: {data_parse}')
         self.send_response(302)
-        self.send_header('Location', '/thanks')
+        self.send_header('Location', '/')
         self.end_headers()
 
-    def parse_from_data(self, data):
-        data_dict = {key: value for key, value in [el.split('=') for el in data.split('&')]}
-        return data_dict
 
     def send_static(self):
         self.send_response(200)
@@ -54,8 +59,25 @@ class HttpHandler(BaseHTTPRequestHandler):
             self.wfile.write(fd.read())
 
 
+def run_client(ip, port, data):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server = ip, port
+    sock.connect(server)
+    username = data['username']
+    message = data['message']
+    d_file = pickle.dumps((username, message))
+    sock.sendall(d_file)
+
+    while True:
+        data = sock.recv(1024)
+        print(f'Received data from server {data.decode().lower()}')
+        if not data:
+            break
+    sock.close()
+
+
 def run(server_class=HTTPServer, handler_class=HttpHandler):
-    server_address = ('localhost', 3000)
+    server_address = ('127.0.0.1', 5000)
     http = server_class(server_address, handler_class)
     try:
         http.serve_forever()
